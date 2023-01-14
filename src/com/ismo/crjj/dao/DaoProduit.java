@@ -71,6 +71,7 @@ public class DaoProduit implements Idao<Produit> {
 			session.close();
 			return true;
 		} catch (Exception e) {
+			System.out.println(e.getMessage());
 			return false;
 		}
 	}

@@ -26,6 +26,11 @@ import javax.swing.JButton;
 
 public class Principale extends JFrame implements ActionListener {
 
+	enum Mode {
+		ADD,
+		UPDATE,
+		NORMAL
+	}
 	private JPanel contentPane;
 	IMetier<Produit> metier = new MetierProduit();
 	private JTextField txt_code;
@@ -42,7 +47,7 @@ public class Principale extends JFrame implements ActionListener {
 	private JButton btnModifier;
 	private JButton btnSupprimer;
 	private JButton btnFermer;
-
+	Mode mode = Mode.NORMAL;
 	/**
 	 * Launch the application.
 	 */
@@ -156,9 +161,14 @@ public class Principale extends JFrame implements ActionListener {
 					txt_achat.setText("");
 					txt_vente.setText("");
 					txt_lib.requestFocus();
+					
+					mode = Mode.ADD;
 				} else {
 					Produit p = new Produit();
 
+					if(!txt_code.getText().isEmpty()) {
+						p.setNumProd(Integer.valueOf(txt_code.getText().substring(1)));
+					}
 					p.setDescription(txt_lib.getText());
 					if(!txt_achat.getText().isEmpty())
 						p.setPrixAchat(Double.parseDouble(txt_achat.getText()));
@@ -166,14 +176,21 @@ public class Principale extends JFrame implements ActionListener {
 					if(!txt_vente.getText().isEmpty())
 						p.setPrixVente(Double.parseDouble(txt_vente.getText()));
 
-					if (metier.save(p)) {
+					boolean res = mode==Mode.ADD ? metier.save(p) : metier.update(p);
+					
+					if (res) {
 						mesProduits = metier.getAll();
-						pos = mesProduits.size() - 1;
-						System.out.println("position : " + pos);
+												
+						if(mode == Mode.ADD) {
+							JOptionPane.showMessageDialog(null, "Produit Ajoute avec succes");
+							pos = mesProduits.size() - 1;
+						}
+						else 
+							JOptionPane.showMessageDialog(null, "Produit modifie avec succes");
+						
 						activeDesactiveButtons(false);
 						remplirFicheProduit();
 
-						JOptionPane.showMessageDialog(null, "Produit Ajoute avec succes");
 
 					} else {
 						activeDesactiveButtons(false);
@@ -184,9 +201,8 @@ public class Principale extends JFrame implements ActionListener {
 
 					btnAjouter.setText("Ajouter");
 					btnModifier.setText("Modifier");
-					
-					
 
+					mode=Mode.NORMAL;
 				}
 			}
 		});
@@ -203,6 +219,15 @@ public class Principale extends JFrame implements ActionListener {
 					btnModifier.setText("Modifier");
 					mesProduits = metier.getAll();
 					remplirFicheProduit();
+					
+					mode=Mode.NORMAL;
+				}else {
+					mode= Mode.UPDATE;
+					btnAjouter.setText("Enregistrer");
+					btnModifier.setText("Annuler");
+					activeDesactiveButtons(true);
+					btnModifier.setEnabled(true);
+					txt_lib.requestFocus();
 				}
 			}
 		});
